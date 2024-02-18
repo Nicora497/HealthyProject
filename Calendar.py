@@ -1,9 +1,15 @@
 import tkinter as tk
 import datetime
+from functools import partial
+
+from Content import Content #
+
+#https://memopy.hatenadiary.jp/
 
 # カレンダーを作成するフレームクラス
-class Calendar(tk.Frame):
-    def __init__(self,master=None,cnf={},**kw):
+class myCalendar(tk.Frame):
+    carrent_date = "00" #日付取り出しようのクラス変数
+    def __init__(self,master=None,sub=None,cnf={},**kw):
         "初期化メソッド"
         
         tk.Frame.__init__(self,master,cnf,**kw)
@@ -13,6 +19,11 @@ class Calendar(tk.Frame):
         # 現在の年と月を属性に追加
         self.year = now.year
         self.month = now.month
+        
+        content = Content(master=sub,mine=master,date = self.carrent_date)
+        content.pack()
+        
+        master.tkraise()
 
         # frame_top部分の作成
         frame_top = tk.Frame(self)
@@ -51,9 +62,9 @@ class Calendar(tk.Frame):
         self.frame_calendar.pack()
 
         # 日付部分を作成するメソッドの呼び出し
-        self.create_calendar(self.year,self.month)
+        self.create_calendar(self.year,self.month,sub)
 
-    def create_calendar(self,year,month):
+    def create_calendar(self,year,month,sub):
         "指定した年(year),月(month)のカレンダーウィジェットを作成する"
 
         # ボタンがある場合には削除する（初期化）
@@ -78,7 +89,8 @@ class Calendar(tk.Frame):
             try:
                 # 日付が0でなかったら、ボタン作成
                 if days[r][c] != 0:
-                    self.day[i] = d_button(self.frame_calendar,text = days[r][c])
+                    date = str(days[r][c]) #わからないいらない
+                    self.day[i] = d_button(self.frame_calendar,text = days[r][c], command=partial(self.get_carrent_date_status,date,sub=sub))
                     self.day[i].grid(column=c,row=r)
             except:
                 """
@@ -104,17 +116,31 @@ class Calendar(tk.Frame):
         self.current_month["text"] = self.month
         # 日付部分を作成するメソッドの呼び出し
         self.create_calendar(self.year,self.month)
+        
+        
+    def get_carrent_date_status(self,day,sub):
+        date = str(self.year)+"/"+str(self.month)+"/"+str(day)
+        carrent_date = date
+        print(carrent_date)
+        self.mv_content(date,sub)
+    
+    def mv_content(self,date,sub=None):
+        sub.tkraise()
+        
 
 # デフォルトのボタンクラス
 class d_button(tk.Button):
+    
     def __init__(self,master=None,cnf={},**kw):
         tk.Button.__init__(self,master,cnf,**kw)
         self.configure(font=("",14),height=2, width=4, relief="flat")
-            
+    
+        
+             
 # ルートフレームの定義    
 if __name__ == '__main__':  
     root = tk.Tk()
     root.title("Calendar App")
-    mycal = Calendar(root)
-    mycal.pack()
+    cal = myCalendar(root)
+    cal.pack()
     root.mainloop()
